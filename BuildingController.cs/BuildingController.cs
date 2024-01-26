@@ -13,5 +13,10 @@ namespace G21097711
         {
             buildingID = id;
         }
+
+        public string GetBuildingID()
+        {
+            return buildingID;
+        }
     }
 }
