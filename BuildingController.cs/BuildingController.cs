@@ -18,6 +18,7 @@ namespace G21097711
         public const string OPEN_STRING = "open";
         public const string FIRE_DRILL_STRING = "fire drill";
         public const string FIRE_ALARM_STRING = "fire alarm";
+        public string previousState = "";
 
         //Constructor to populate buildingID
         public BuildingController(string id)
@@ -50,21 +51,56 @@ namespace G21097711
         //Constructor to set currentState
         public bool SetCurrentState(string state)
         {
-            switch (state)
+            string realState = GetCurrentState();
+
+            if (state == realState)
             {
-                case CLOSED_STRING:
+                return true;
+            }
+            else if (state == CLOSED_STRING)
+            {
+                if ((currentState == OUT_OF_HOURS_STRING) || (previousState == CLOSED_STRING))
+                {
                     currentState = CLOSED_STRING;
                     return true;
-                case OUT_OF_HOURS_STRING: currentState = OUT_OF_HOURS_STRING;
-                    return true;
-                case OPEN_STRING: currentState = OPEN_STRING;
-                    return true;
-                case FIRE_DRILL_STRING: currentState = FIRE_DRILL_STRING;
-                    return true;
-                case FIRE_ALARM_STRING: currentState = FIRE_ALARM_STRING;
-                    return true;
-                default:
+                }
+                else
+                {
                     return false;
+                }
+            }
+            else if (state == OUT_OF_HOURS_STRING)
+            {
+                currentState = OUT_OF_HOURS_STRING;
+                return true;
+            }
+            else if (state == OPEN_STRING)
+            {
+                if ((currentState == OUT_OF_HOURS_STRING) || (previousState == OPEN_STRING))
+                {
+                    currentState = OPEN_STRING;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else if (state == FIRE_DRILL_STRING)
+            {
+                previousState = realState;
+                currentState = FIRE_DRILL_STRING;
+                return true;
+            }
+            else if (state == FIRE_ALARM_STRING)
+            {
+                previousState = realState;
+                currentState = FIRE_ALARM_STRING;
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
     }
