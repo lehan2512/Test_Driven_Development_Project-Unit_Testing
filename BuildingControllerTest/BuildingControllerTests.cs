@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Xml;
 
 namespace G21097711.Tests
 {
@@ -155,11 +156,7 @@ namespace G21097711.Tests
             BuildingController A = new BuildingController(inputBuildingID);
             string[] validInputsArray =
             {
-                BuildingController.OUT_OF_HOURS_STRING,
-                BuildingController.CLOSED_STRING,
-                BuildingController.OPEN_STRING,
-                BuildingController.FIRE_DRILL_STRING,
-                BuildingController.FIRE_ALARM_STRING
+                "open", "out of hours", "closed", "out of hours"
             };
 
             for (int i = 0; i < validInputsArray.Length; i++)
@@ -210,6 +207,46 @@ namespace G21097711.Tests
                 Assert.IsFalse(A.SetCurrentState(invalidInputsArray[i]));
             }
         }
+
+        //UNIT TESTS FOR L2 R1
+        //Test 1: Testing if SetCurrentState functions when input is valid but not a state it can change to
+        [Test]
+        public void TestSetCurrentState_4()
+        {
+            string inputBuildingID = "ucl";
+
+            BuildingController A = new BuildingController(inputBuildingID);
+
+            A.SetCurrentState("open");
+            Assert.IsFalse(A.SetCurrentState("closed"));    //if current state is open, SetCurrentState("closed") should return false
+
+            A.SetCurrentState("out of hours");
+            A.SetCurrentState("closed");
+            Assert.IsFalse(A.SetCurrentState("open"));  //if current state is closed, SetCurrentState("open") should return false
+        }
+
+        //Test 2: Testing if SetCurrentState functions for fire alarm and fire drill with valid input
+        [Test]
+        public void TestSetCurrentState_5()
+        {
+            string inputBuildingID = "ucl";
+
+            BuildingController A = new BuildingController(inputBuildingID);
+
+            Assert.IsTrue(A.SetCurrentState("fire drill"));
+
+            A.SetCurrentState("out of hours");
+            A.SetCurrentState("closed");
+
+            Assert.IsTrue(A.SetCurrentState("fire alarm"));
+
+            A.SetCurrentState("closed");
+            A.SetCurrentState("out of hours");
+            A.SetCurrentState("open");
+
+            Assert.IsTrue(A.SetCurrentState("fire drill"));
+        }
+
 
 
 
