@@ -1,6 +1,6 @@
 ﻿namespace G21097711
 {
-    internal interface IEmailService
+    public interface IEmailService
     {
     }
 }

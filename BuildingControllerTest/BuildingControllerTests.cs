@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using NSubstitute;
 using System.Xml;
 
 namespace G21097711.Tests
@@ -8,12 +9,26 @@ namespace G21097711.Tests
     {
         private BuildingController buildingController;
         private BuildingController buildingController2;
+        private BuildingController buildingController3;
+        private BuildingController buildingController4;
+
+
+        ILightManager LightManager = Substitute.For<ILightManager>();
+        IDoorManager DoorManager = Substitute.For<IDoorManager>();
+        IFireAlarmManager FireAlarmManager = Substitute.For<IFireAlarmManager>();
+        IEmailService EmailService = Substitute.For<IEmailService>();
+        IWebService WebService = Substitute.For<IWebService>();
+
 
         [SetUp]
         public void setup()
         {
-            string inputBuildingID = "ucl";
             buildingController = new BuildingController("ucl");
+            buildingController4 = new BuildingController("ucl", LightManager, FireAlarmManager, DoorManager, WebService, EmailService);
+
+            LightManager.GetStatus().Returns("Lights, OK, OK, OK, OK, OK, OK, OK, OK, OK, OK,");
+            DoorManager.GetStatus().Returns("Doors, OK, OK, OK, OK, OK, OK, OK, OK, OK, OK,");
+            FireAlarmManager.GetStatus().Returns("Fire Alarms, OK, OK, OK, OK, OK, OK, OK, OK, OK, OK,");
         }
 
         //LEVEL 1 REQUIREMENTS
@@ -33,11 +48,11 @@ namespace G21097711.Tests
         public void testGetBuildingID(string initialBuildingID, string expectedBuildingID)
         {
             //Arrange
-            buildingController.setBuildingID(initialBuildingID);
+            buildingController.SetBuildingID(initialBuildingID);
             string realBuildingID;
 
             //Act
-            realBuildingID = buildingController.getBuildingID();
+            realBuildingID = buildingController.GetBuildingID();
 
             //Assert
             Assert.That(realBuildingID, Is.EqualTo(expectedBuildingID));
@@ -52,11 +67,11 @@ namespace G21097711.Tests
         public void testBuildingIDFormat(string initialBuildingID, string expectedBuildingID)
         {
             //Arrange
-            buildingController.setBuildingID(initialBuildingID);
+            buildingController.SetBuildingID(initialBuildingID);
             string realBuildingID;
 
             //Act
-            realBuildingID = buildingController.getBuildingID();
+            realBuildingID = buildingController.GetBuildingID();
 
             //Assert
             Assert.That(realBuildingID, Is.EqualTo(expectedBuildingID));
@@ -70,11 +85,11 @@ namespace G21097711.Tests
         public void testSetBuildingID(string initialBuildingID, string newBuildingID, string expectedBuildingID)
         {
             //Act
-            buildingController.setBuildingID(initialBuildingID);
-            buildingController.setBuildingID(newBuildingID);
+            buildingController.SetBuildingID(initialBuildingID);
+            buildingController.SetBuildingID(newBuildingID);
 
             //Assert
-            Assert.That(buildingController.getBuildingID(), Is.EqualTo(expectedBuildingID));
+            Assert.That(buildingController.GetBuildingID(), Is.EqualTo(expectedBuildingID));
         }
 
 
@@ -87,7 +102,7 @@ namespace G21097711.Tests
             string realCurrentState;
 
             //Act
-            realCurrentState = buildingController.getCurrentState();
+            realCurrentState = buildingController.GetCurrentState();
 
             //Assert
             Assert.That(realCurrentState, Is.EqualTo(expectedCurrentState));
@@ -107,8 +122,8 @@ namespace G21097711.Tests
             string realCurrentState;
 
             //Act
-            buildingController.setCurrentState(newCurrentState);
-            realCurrentState = buildingController.getCurrentState();
+            buildingController.SetCurrentState(newCurrentState);
+            realCurrentState = buildingController.GetCurrentState();
 
             //Assert
             Assert.That(realCurrentState, Is.EqualTo(expectedCurrentState));
@@ -127,8 +142,8 @@ namespace G21097711.Tests
             string realCurrentState;
 
             //Act
-            buildingController.setCurrentState(newState);
-            realCurrentState = buildingController.getCurrentState();
+            buildingController.SetCurrentState(newState);
+            realCurrentState = buildingController.GetCurrentState();
 
             //Assert
             Assert.That(realCurrentState, Is.EqualTo(newState));
@@ -148,9 +163,9 @@ namespace G21097711.Tests
             string initialState = "out of hours";
 
             //Act
-            buildingController.setCurrentState(initialState);
-            buildingController.setCurrentState(newState);
-            realCurrentState = buildingController.getCurrentState();
+            buildingController.SetCurrentState(initialState);
+            buildingController.SetCurrentState(newState);
+            realCurrentState = buildingController.GetCurrentState();
 
             //Assert
             Assert.That(realCurrentState != newState);
@@ -172,9 +187,9 @@ namespace G21097711.Tests
             string realCurrentState;
 
             //Act
-            buildingController.setCurrentState(initialState);
-            buildingController.setCurrentState(newState);
-            realCurrentState = buildingController.getCurrentState();
+            buildingController.SetCurrentState(initialState);
+            buildingController.SetCurrentState(newState);
+            realCurrentState = buildingController.GetCurrentState();
 
             //Assert
             Assert.IsFalse(realCurrentState == newState);
@@ -196,10 +211,10 @@ namespace G21097711.Tests
             string realCurrentState;
 
             //Act
-            buildingController.setCurrentState(initialState);
-            buildingController.setCurrentState(fireState);
-            buildingController.setCurrentState(finalState);
-            realCurrentState = buildingController.getCurrentState();
+            buildingController.SetCurrentState(initialState);
+            buildingController.SetCurrentState(fireState);
+            buildingController.SetCurrentState(finalState);
+            realCurrentState = buildingController.GetCurrentState();
 
             //Assert
             Assert.IsTrue(realCurrentState == finalState);
@@ -220,10 +235,10 @@ namespace G21097711.Tests
             string realCurrentState;
 
             //Act
-            buildingController.setCurrentState(initialState);
-            buildingController.setCurrentState(fireState);
-            buildingController.setCurrentState(finalState);
-            realCurrentState = buildingController.getCurrentState();
+            buildingController.SetCurrentState(initialState);
+            buildingController.SetCurrentState(fireState);
+            buildingController.SetCurrentState(finalState);
+            realCurrentState = buildingController.GetCurrentState();
 
             //Assert
             Assert.IsFalse(realCurrentState == finalState);
@@ -238,15 +253,15 @@ namespace G21097711.Tests
         [TestCase("out of hours", "out of hours")]
         [TestCase("open", "open")]
         [TestCase("closed", "closed")]
-        public void testFireDrillAndFireAlarmWithInvalidInput(string initialState, string finalState)
+        public void testStateChangeWhenCurrentStateIsInput(string initialState, string finalState)
         {
             //Arrange
             string realCurrentState;
 
             //Act
-            buildingController.setCurrentState(initialState);
-            buildingController.setCurrentState(finalState);
-            realCurrentState = buildingController.getCurrentState();
+            buildingController.SetCurrentState(initialState);
+            buildingController.SetCurrentState(finalState);
+            realCurrentState = buildingController.GetCurrentState();
 
             //Assert
             Assert.IsTrue(realCurrentState == finalState);
@@ -265,8 +280,8 @@ namespace G21097711.Tests
             string state;
 
             //Act
-            buildingID = buildingController2.getBuildingID();
-            state = buildingController2.getCurrentState();
+            buildingID = buildingController2.GetBuildingID();
+            state = buildingController2.GetCurrentState();
 
             //Assert
             Assert.IsTrue(buildingID == initialBuildingID);
@@ -282,15 +297,94 @@ namespace G21097711.Tests
         public void testSecondConstructerWithInvalidInput(string initialBuildingID, string invalidState)
         {
             //Arrange
-            string arguemrntExceptionMessage = 
+            string arguemrntExceptionMessage =
                 "BuildingController can only be initialised to the following states: 'open', 'closed', 'out of hours'";
 
             //Act and Assert
             Assert.Throws<ArgumentException>(() => new BuildingController(initialBuildingID, invalidState), arguemrntExceptionMessage);
         }
 
+        //LEVEL 3 REQUIREMENTS
+
+        //L3R1 - Testing constructor with 6 parameters with valid input
+        [Test]
+        public void testConstructorWithDependenciesUsingValidInput()
+        {
+            //Arrange
+            buildingController3 = new BuildingController("Ucl", LightManager, FireAlarmManager, DoorManager, WebService, EmailService);
+            string expectedBuildingID;
+            string realBuildingID;
+
+            //Act
+            expectedBuildingID = buildingController3.GetBuildingID();
+
+            //Assert
+            Assert.IsNotNull(buildingController);
+            Assert.That(buildingController3.GetBuildingID(), Is.EqualTo(expectedBuildingID));
+        }
+
+        //L3R2 - Testing if getStatus() works for LightManager, DoorManager and FireAlarmManager
+        [Test]
+        [TestCase(
+            "Lights, OK, OK, OK, OK, OK, OK, OK, OK, OK, OK,",
+            "Doors, OK, OK, OK, OK, OK, OK, OK, OK, OK, OK,",
+            "Fire Alarms, OK, OK, OK, OK, OK, OK, OK, OK, OK, OK,")]
+        public void testIfLightManagersReturnExpectedStatus(
+            string expectedReturnStringForLightManager,
+            string expectedReturnStringForDoorManager,
+            string expectedReturnStringForFireAlarmManager)
+        {
+            //Arrange
+            string realReturnStringForLightManager;
+            string realReturnStringForDoorManager;
+            string realReturnStringForFireAlarmManager;
+
+            //Act
+            realReturnStringForLightManager = LightManager.GetStatus();
+            realReturnStringForDoorManager = DoorManager.GetStatus();
+            realReturnStringForFireAlarmManager = FireAlarmManager.GetStatus();
 
 
+            //Assert
+            Assert.That(realReturnStringForLightManager, Is.EqualTo(expectedReturnStringForLightManager));
+            Assert.That(realReturnStringForDoorManager, Is.EqualTo(expectedReturnStringForDoorManager));
+            Assert.That(realReturnStringForFireAlarmManager, Is.EqualTo(expectedReturnStringForFireAlarmManager));
+        }
+
+        //L3R4 - Testing GetStatusReport()
+        [Test]
+        [TestCase(
+            "Lights, OK, OK, OK, OK, OK, OK, OK, OK, OK, OK,Doors, OK, OK, OK, OK, OK, OK, OK, OK, OK, OK,Fire Alarms, OK, OK, OK, OK, OK, OK, OK, OK, OK, OK,")]
+        public void testGetStatusReport(string expectedReturnString)
+        {
+            //Arrange
+            string realReturnString;
+
+            //Act
+            realReturnString = buildingController4.GetStatusReport();
+
+            //Assert
+            Assert.That(realReturnString, Is.EqualTo(expectedReturnString));
+        }
+
+
+        //L3R5 - Testing SetCurrentState("open") with OpenAllDoors() set to true and false
+        [Test]
+        [TestCase(true, "open", "open")]
+        [TestCase(false, "open", "out of hours")]
+        public void testSetCurrentStateToOpen(bool allDoorsOpen, string openState, string expectedState)
+        {
+            //Arrange
+            DoorManager.OpenAllDoors().Returns(allDoorsOpen);
+            string realState;
+
+            //Act
+            buildingController4.SetCurrentState(openState); //Knowing that contructor initializes the state to "out of hours"
+            realState = buildingController4.GetCurrentState();
+
+            //Assert
+            Assert.That(expectedState, Is.EqualTo(realState));
+        }
 
 
 

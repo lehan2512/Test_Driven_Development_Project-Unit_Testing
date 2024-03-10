@@ -1,6 +1,7 @@
 ﻿namespace G21097711
 {
-    internal interface IFireAlarmManager
+    public interface IFireAlarmManager : IManager
     {
+        public void SetAlarm(bool isActive);
     }
 }

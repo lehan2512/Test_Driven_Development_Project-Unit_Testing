@@ -12,11 +12,11 @@ namespace G21097711
         private string buildingID = string.Empty;
         private string currentState = string.Empty;
 
-        private ILightManager lightManager;
-        private IFireAlarmManager fireAlarmManager;
-        private IDoorManager doorManager;
-        private IWebService webService;
-        private IEmailService emailService;
+        private ILightManager LightManager;
+        private IFireAlarmManager FireAlarmManager;
+        private IDoorManager DoorManager;
+        private IWebService WebService;
+        private IEmailService EmailService;
 
         //Declare states as constants
         public const string OUT_OF_HOURS_STRING = "out of hours";
@@ -50,7 +50,7 @@ namespace G21097711
             }
         }
 
-        BuildingController(
+        public BuildingController(
             string id,
             ILightManager iLightManager,
             IFireAlarmManager iFireAlarmManager,
@@ -61,43 +61,42 @@ namespace G21097711
             buildingID = id.ToLower();
             currentState = OUT_OF_HOURS_STRING;
 
-            // Assign dependencies
-            lightManager = iLightManager ?? throw new ArgumentNullException(nameof(iLightManager));
-            fireAlarmManager = iFireAlarmManager ?? throw new ArgumentNullException(nameof(iFireAlarmManager));
-            doorManager = iDoorManager ?? throw new ArgumentNullException(nameof(iDoorManager));
-            webService = iWebService ?? throw new ArgumentNullException(nameof(iWebService));
-            emailService = iEmailService ?? throw new ArgumentNullException(nameof(iEmailService));
+            LightManager = iLightManager;
+            FireAlarmManager = iFireAlarmManager;
+            DoorManager = iDoorManager;
+            WebService = iWebService;
+            EmailService = iEmailService;
         }
 
         //Function to get buildingID
-        public string getBuildingID()
+        public string GetBuildingID()
         {
             return buildingID;
         }
 
         //Function to modify buildingID
-        public void setBuildingID(string id)
+        public void SetBuildingID(string id)
         {
             buildingID = id;
             buildingID = buildingID.ToLower();
         }
 
         //Function to get currentState
-        public string getCurrentState()
+        public string GetCurrentState()
         {
             return currentState;
         }
 
         //Function to set currentState
-        public bool setCurrentState(string newState)
+        public bool SetCurrentState(string state)
         {
-            string realState = getCurrentState();
+            string realState = GetCurrentState();
 
-            if (newState == realState)
+            if (state == realState)
             {
                 return true;
             }
-            else if (newState == CLOSED_STRING)
+            else if (state == CLOSED_STRING)
             {
                 if ((currentState == OUT_OF_HOURS_STRING) || (previousState == CLOSED_STRING))
                 {
@@ -109,7 +108,7 @@ namespace G21097711
                     return false;
                 }
             }
-            else if (newState == OUT_OF_HOURS_STRING)
+            else if (state == OUT_OF_HOURS_STRING)
             {
                 if ((previousState == OUT_OF_HOURS_STRING) || (currentState == OPEN_STRING) || (currentState == CLOSED_STRING))
                 {
@@ -121,19 +120,26 @@ namespace G21097711
                     return false;
                 }
             }
-            else if (newState == OPEN_STRING)
+            else if (state == OPEN_STRING)
             {
                 if ((currentState == OUT_OF_HOURS_STRING) || (previousState == OPEN_STRING))
                 {
-                    currentState = OPEN_STRING;
-                    return true;
+                    if (DoorManager.OpenAllDoors())
+                    {
+                        currentState = OPEN_STRING;
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
                     return false;
                 }
             }
-            else if (newState == FIRE_DRILL_STRING)
+            else if (state == FIRE_DRILL_STRING)
             {
                 if ((currentState == OUT_OF_HOURS_STRING) || (currentState == OPEN_STRING) || (currentState == CLOSED_STRING))
                 {
@@ -147,7 +153,7 @@ namespace G21097711
                 }
 
             }
-            else if (newState == FIRE_ALARM_STRING)
+            else if (state == FIRE_ALARM_STRING)
             {
                 if ((currentState == OUT_OF_HOURS_STRING) || (currentState == OPEN_STRING) || (currentState == CLOSED_STRING))
                 {
@@ -164,6 +170,14 @@ namespace G21097711
             {
                 return false;
             }
+        }
+
+        public string GetStatusReport()
+        {
+            string lightStatus = LightManager.GetStatus();
+            string doorsStatus = DoorManager.GetStatus();
+            string fireAlarmStatus = FireAlarmManager.GetStatus();
+            return lightStatus + doorsStatus + fireAlarmStatus;
         }
     }
 }
