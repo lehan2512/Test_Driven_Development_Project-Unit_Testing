@@ -3,248 +3,290 @@ using System.Xml;
 
 namespace G21097711.Tests
 {
+    [TestFixture]
     public class BuildingControllerTests
     {
-        //UNIT TESTS FOR L1 R1
-        //Test 1: Testing if BuildingController() constructor initializes BuildingID
-        [Test]
-        public void TestBuildingControllerConstructor_1()
+        private BuildingController buildingController;
+        private BuildingController buildingController2;
+
+        [SetUp]
+        public void setup()
         {
             string inputBuildingID = "ucl";
-            string expectedBuildingID = "ucl";
+            buildingController = new BuildingController("ucl");
+        }
 
-            BuildingController A = new BuildingController(inputBuildingID);
-            string realBuildingID = A.GetBuildingID();
+        //LEVEL 1 REQUIREMENTS
 
-            Assert.IsNotNull(A, "BuildingController instance should not be null");
+        //L1R1 - Testing if BuildingController() constructor creates a new instance of the class
+        [Test]
+        public void testBuildingControllerInitializationAndDecleration() //Test does not have an Arrange and an Act because it is just a null check
+        {
+            //Assert
+            Assert.IsNotNull(buildingController, "BuildingController instance should not be null");
+        }
+
+
+        //L1R2 - Testing if getBuildingID() functions as expencted and if buildingID is stored in expected format
+        [Test]
+        [TestCase("ucl", "ucl")]
+        public void testGetBuildingID(string initialBuildingID, string expectedBuildingID)
+        {
+            //Arrange
+            buildingController.setBuildingID(initialBuildingID);
+            string realBuildingID;
+
+            //Act
+            realBuildingID = buildingController.getBuildingID();
+
+            //Assert
             Assert.That(realBuildingID, Is.EqualTo(expectedBuildingID));
         }
 
-        //Test 2: Testing Constructer for BuildingController to see if it accepts spaces, symbols and numbers
+
+        //L1R3 - Testing if () if buildingID is stored in expected format
         [Test]
-        public void TestBuildingControllerConstructor_2()
+        [TestCase("UCL", "ucl")]                //Testing behaviour with upper case input ID
+        [TestCase("123", "123")]                //Testing behaviour with numeric input ID
+        [TestCase("ucL - @#$123", "ucl - @#$123")]  //Testing behaviour with symbols in input ID
+        public void testBuildingIDFormat(string initialBuildingID, string expectedBuildingID)
         {
-            string expectedBuildingID = "ucl - 123";
+            //Arrange
+            buildingController.setBuildingID(initialBuildingID);
+            string realBuildingID;
 
-            BuildingController A = new BuildingController(expectedBuildingID);
-            string realBuildingID = A.GetBuildingID();
+            //Act
+            realBuildingID = buildingController.getBuildingID();
 
+            //Assert
             Assert.That(realBuildingID, Is.EqualTo(expectedBuildingID));
         }
 
-        //UNIT TESTS FOR L1 R2
-        //Test 1: Testing if GetBuildingID() functions
+
+        //L1R4 - Testing if setBuildingID() functions as expected
         [Test]
-        public void TestGetBuildingID()
+        [TestCase("ucl", "ucl123", "ucl123")]               //Test  9: Testing behaviour with new input ID
+        [TestCase("ucl", "Ucl - 123!@#", "ucl - 123!@#")]   //Test 10: Testing behaviour with new input ID with uppercas letters, spaces, numbers and symbols
+        public void testSetBuildingID(string initialBuildingID, string newBuildingID, string expectedBuildingID)
         {
-            string expectedBuildingID = "ucl";
+            //Act
+            buildingController.setBuildingID(initialBuildingID);
+            buildingController.setBuildingID(newBuildingID);
 
-            BuildingController A = new BuildingController(expectedBuildingID);
-            string realBuildingID = A.GetBuildingID();
-
-            Assert.That(realBuildingID, Is.EqualTo(expectedBuildingID));
+            //Assert
+            Assert.That(buildingController.getBuildingID(), Is.EqualTo(expectedBuildingID));
         }
 
-        //UNIT TESTS FOR L1 R3
-        //Test 1: Testing if BuildingID is converted to Lowercase if input is all in uppercase
+
+        //L1R5 - Testing the initialization and decleration of currentState
         [Test]
-        public void TestToLowerCase_1()
+        [TestCase("out of hours")]
+        public void testCurrentStateInitializationAndDecleration(string expectedCurrentState)
         {
-            string expectedBuildingID = "ucl";
-            string inputBuildingID = "UCL";
+            //Arrange
+            string realCurrentState;
 
-            BuildingController A = new BuildingController(inputBuildingID);
-            string realBuildingID = A.GetBuildingID();
+            //Act
+            realCurrentState = buildingController.getCurrentState();
 
-            Assert.That(realBuildingID, Is.EqualTo(expectedBuildingID));
-
-        }
-
-        //Test 2: Testing if BuildingID is converted to Lowercase if input has uppercase and lowercase
-        [Test]
-        public void TestToLowerCase_2()
-        {
-            string expectedBuildingID = "ucl";
-            string inputBuildingID = "UcL";
-
-            BuildingController A = new BuildingController(inputBuildingID);
-            string realBuildingID = A.GetBuildingID();
-
-            Assert.That(realBuildingID, Is.EqualTo(expectedBuildingID));
-        }
-
-        //Test 3: Testing if BuildingID is converted to Lowercase if input is already lowercase
-        [Test]
-        public void TestToLowerCase_3()
-        {
-            string expectedBuildingID = "ucl";
-            string inputBuildingID = "ucl";
-
-            BuildingController A = new BuildingController(inputBuildingID);
-            string realBuildingID = A.GetBuildingID();
-
-            Assert.That(realBuildingID, Is.EqualTo(expectedBuildingID));
-        }
-
-        //UNIT TESTS FOR L1 R4
-        //Test 1: Testing if SetBuildingID() functions sets buildingID to new input
-        [Test]
-        public void TestSetBuildingID_1()
-        {
-            string initialBuildingID = "ucl";   //Initialized buildingID
-            string newBuildingID = "ucl123";   //New buildingID
-
-            BuildingController A = new BuildingController(initialBuildingID);
-            A.SetBuildingID(newBuildingID);
-            string realBuildingID = A.GetBuildingID();
-
-            Assert.That(realBuildingID, Is.EqualTo(newBuildingID));
-        }
-
-        //Test 2: Testing if SetBuildingID() converts Uppercase characters to Lowercase
-        [Test]
-        public void TestSetBuildingID_2()
-        {
-            string initialBuildingID = "ucl";   //Initialized buildingID
-            string newBuildingID = "UCL123";   //Changed buildingID
-            string expectedBuildingID = "ucl123";   //Final expected buildingID
-
-            BuildingController A = new BuildingController(initialBuildingID);
-            A.SetBuildingID(newBuildingID);
-            string realBuildingID = A.GetBuildingID();
-
-            Assert.That(realBuildingID, Is.EqualTo(expectedBuildingID));
-        }
-
-        //Test 3: Testing if SetBuildingID() accepts spaces, symbols and numbers
-        [Test]
-        public void TestSetBuildingID_3()
-        {
-            string initialBuildingID = "ucl";   //Initialized buildingID
-            string newBuildingID = "ucl - 123";   //Changed buildingID
-            string expectedBuildingID = "ucl - 123";   //Final expected buildingID
-
-            BuildingController A = new BuildingController(initialBuildingID);
-            A.SetBuildingID(newBuildingID);
-            string realBuildingID = A.GetBuildingID();
-
-            Assert.That(realBuildingID, Is.EqualTo(expectedBuildingID));
-        }
-
-        //UNIT TESTS FOR L1 R5 and L1 R6
-        //Test 1: Testing if BuildingController() constructor initializes currentState to "out of hours"
-        //Test 2: Testing if GetCurrentState() returns currentState
-        [Test]
-        public void TestBuildingControllerConstructor_3()
-        {
-            string inputBuildingID = "UCL";
-            string expectedCurrentState = "out of hours";
-
-            BuildingController A = new BuildingController(inputBuildingID);
-            string realCurrentState = A.GetCurrentState();
-
+            //Assert
             Assert.That(realCurrentState, Is.EqualTo(expectedCurrentState));
         }
 
-        //UNIT TESTS FOR L1 R7
-        //Test 1: Testing if SetCurrentState functions with valid input
+
+        //L1R6 - Testing getCurrentState()
         [Test]
-        public void TestSetCurrentState_1()
+        [TestCase("open", "open")]
+        [TestCase("closed", "closed")]
+        [TestCase("out of hours", "out of hours")]
+        [TestCase("fire drill", "fire drill")]
+        [TestCase("fire alarm", "fire alarm")]
+        public void testGetCurrentState(string newCurrentState, string expectedCurrentState)
         {
-            string inputBuildingID = "ucl";
+            //Arrange
+            string realCurrentState;
 
-            BuildingController A = new BuildingController(inputBuildingID);
-            string[] validInputsArray =
-            {
-                "open", "out of hours", "closed", "out of hours"
-            };
+            //Act
+            buildingController.setCurrentState(newCurrentState);
+            realCurrentState = buildingController.getCurrentState();
 
-            for (int i = 0; i < validInputsArray.Length; i++)
-            {
-                Assert.IsTrue(A.SetCurrentState(validInputsArray[i]));
-                string realCurrentState = A.GetCurrentState();
-                Assert.AreEqual(realCurrentState, validInputsArray[i]);
-            }
+            //Assert
+            Assert.That(realCurrentState, Is.EqualTo(expectedCurrentState));
         }
 
-        //Test 2: Testing if SetCurrentState() functions if inputstate == currentState
+
+        //L1R7 - Testing if setCurrentState() functions with valid input
         [Test]
-        public void TestSetCurrentState_2()
+        [TestCase("open")]
+        [TestCase("closed")]
+        [TestCase("fire drill")]
+        [TestCase("fire alarm")]
+        public void testSetCurrentStateWithValidInput(string newState)
         {
-            string inputBuildingID = "ucl";
-            string expectedCurrentState = "out of hours";
-            string realCurrentState = "";
+            //Arrange
+            string realCurrentState;
 
-            BuildingController A = new BuildingController(inputBuildingID); //currentState is initialized to "out of hours" using constructor
-            realCurrentState = A.GetCurrentState();
-            if (realCurrentState == expectedCurrentState)
-            {
-                A.SetCurrentState(expectedCurrentState);
-            }
-            realCurrentState = A.GetCurrentState();
+            //Act
+            buildingController.setCurrentState(newState);
+            realCurrentState = buildingController.getCurrentState();
 
-            Assert.IsTrue(realCurrentState == expectedCurrentState);
+            //Assert
+            Assert.That(realCurrentState, Is.EqualTo(newState));
         }
 
-        //Test 3: Testing if SetCurrentState() functions for invalid input
+
+        //L1R7 - Testing if currentState remains unchanged if setCurrentState() is given invalid input
         [Test]
-        public void TestSetCurrentState_3()
+        [TestCase("Out of Hours")]
+        [TestCase("outofhours")]
+        [TestCase("OPEN")]
+        [TestCase("123")]
+        public void testSetCurrentStateWithInvalidInput(string newState)
         {
-            string inputBuildingID = "ucl";
+            //Arrange
+            string realCurrentState;
+            string initialState = "out of hours";
 
-            BuildingController A = new BuildingController(inputBuildingID);
-            const string INVALID_INPUT_1 = "Out of Order";
-            const string INVALID_INPUT_2 = "OPEN";
-            const string INVALID_INPUT_3 = "closing";
-            const string INVALID_INPUT_4 = "holiday";
-            string[] invalidInputsArray =
-            {
-                INVALID_INPUT_1, INVALID_INPUT_2, INVALID_INPUT_3, INVALID_INPUT_4
-            };
+            //Act
+            buildingController.setCurrentState(initialState);
+            buildingController.setCurrentState(newState);
+            realCurrentState = buildingController.getCurrentState();
 
-            for (int i = 0; i < invalidInputsArray.Length; i++)
-            {
-                Assert.IsFalse(A.SetCurrentState(invalidInputsArray[i]));
-            }
+            //Assert
+            Assert.That(realCurrentState != newState);
+            Assert.That(realCurrentState == initialState);
         }
 
-        //UNIT TESTS FOR L2 R1
-        //Test 1: Testing if SetCurrentState functions when input is valid but not a state it can change to
+
+        //LEVEL 2 REQUIREMENTS
+
+        //L2R1 - Testing if SetCurrentState functions when input is valid but not a state it can change to
         [Test]
-        public void TestSetCurrentState_4()
+        [TestCase("open", "closed")]
+        [TestCase("closed", "open")]
+        [TestCase("fire drill", "fire alarm")]
+        [TestCase("fire alarm", "fire drill")]
+        public void testSetCurrentStateWithUnacceptableStateChange(string initialState, string newState)
         {
-            string inputBuildingID = "ucl";
+            //Arrange
+            string realCurrentState;
 
-            BuildingController A = new BuildingController(inputBuildingID);
+            //Act
+            buildingController.setCurrentState(initialState);
+            buildingController.setCurrentState(newState);
+            realCurrentState = buildingController.getCurrentState();
 
-            A.SetCurrentState("open");
-            Assert.IsFalse(A.SetCurrentState("closed"));    //if current state is open, SetCurrentState("closed") should return false
-
-            A.SetCurrentState("out of hours");
-            A.SetCurrentState("closed");
-            Assert.IsFalse(A.SetCurrentState("open"));  //if current state is closed, SetCurrentState("open") should return false
+            //Assert
+            Assert.IsFalse(realCurrentState == newState);
+            Assert.IsTrue(realCurrentState == initialState);
         }
 
-        //Test 2: Testing if SetCurrentState functions for fire alarm and fire drill with valid input
+
+        //L2R1 - Testing if fire alarm and fire drill state change functions as expected
         [Test]
-        public void TestSetCurrentState_5()
+        [TestCase("open", "fire drill", "open")]
+        [TestCase("closed", "fire drill", "closed")]
+        [TestCase("out of hours", "fire drill", "out of hours")]
+        [TestCase("open", "fire alarm", "open")]
+        [TestCase("closed", "fire alarm", "closed")]
+        [TestCase("out of hours", "fire alarm", "out of hours")]
+        public void testFireDrillAndFireAlarm(string initialState, string fireState, string finalState)
         {
-            string inputBuildingID = "ucl";
+            //Arrange
+            string realCurrentState;
 
-            BuildingController A = new BuildingController(inputBuildingID);
+            //Act
+            buildingController.setCurrentState(initialState);
+            buildingController.setCurrentState(fireState);
+            buildingController.setCurrentState(finalState);
+            realCurrentState = buildingController.getCurrentState();
 
-            Assert.IsTrue(A.SetCurrentState("fire drill"));
+            //Assert
+            Assert.IsTrue(realCurrentState == finalState);
+        }
 
-            A.SetCurrentState("out of hours");
-            A.SetCurrentState("closed");
 
-            Assert.IsTrue(A.SetCurrentState("fire alarm"));
+        //L2R1 - Testing if fire alarm and fire drill state change with invalid input functions as expected
+        [Test]
+        [TestCase("open", "fire drill", "closed")]
+        [TestCase("closed", "fire drill", "out of hours")]
+        [TestCase("out of hours", "fire drill", "open")]
+        [TestCase("open", "fire alarm", "out of hours")]
+        [TestCase("closed", "fire alarm", "open")]
+        [TestCase("out of hours", "fire alarm", "closed")]
+        public void testFireDrillAndFireAlarmWithInvalidInput(string initialState, string fireState, string finalState)
+        {
+            //Arrange
+            string realCurrentState;
 
-            A.SetCurrentState("closed");
-            A.SetCurrentState("out of hours");
-            A.SetCurrentState("open");
+            //Act
+            buildingController.setCurrentState(initialState);
+            buildingController.setCurrentState(fireState);
+            buildingController.setCurrentState(finalState);
+            realCurrentState = buildingController.getCurrentState();
 
-            Assert.IsTrue(A.SetCurrentState("fire drill"));
+            //Assert
+            Assert.IsFalse(realCurrentState == finalState);
+            Assert.IsTrue(realCurrentState == fireState);
+        }
+
+
+        //L2R2 - Testing if  setCurrentState() returns true if state is changed to current state
+        [Test]
+        [TestCase("open", "open")]
+        [TestCase("closed", "closed")]
+        [TestCase("out of hours", "out of hours")]
+        [TestCase("open", "open")]
+        [TestCase("closed", "closed")]
+        public void testFireDrillAndFireAlarmWithInvalidInput(string initialState, string finalState)
+        {
+            //Arrange
+            string realCurrentState;
+
+            //Act
+            buildingController.setCurrentState(initialState);
+            buildingController.setCurrentState(finalState);
+            realCurrentState = buildingController.getCurrentState();
+
+            //Assert
+            Assert.IsTrue(realCurrentState == finalState);
+        }
+
+        //L2R3 - Testing if second Constructer of BuildingController functions as expected for valid input
+        [Test]
+        [TestCase("ucl", "open")]
+        [TestCase("ucl", "out of hours")]
+        [TestCase("ucl", "closed")]
+        public void testSecondConstructerWithValidInput(string initialBuildingID, string validState)
+        {
+            //Arrange
+            buildingController2 = new BuildingController(initialBuildingID, validState);
+            string buildingID;
+            string state;
+
+            //Act
+            buildingID = buildingController2.getBuildingID();
+            state = buildingController2.getCurrentState();
+
+            //Assert
+            Assert.IsTrue(buildingID == initialBuildingID);
+            Assert.IsTrue(state == validState);
+        }
+
+
+        //L2R3 - Testing if second Constructer of BuildingController functions as expected for invalid input
+        [Test]
+        [TestCase("ucl", "fire drill")]
+        [TestCase("ucl", "fire alarm")]
+        [TestCase("ucl", "Open")]
+        public void testSecondConstructerWithInvalidInput(string initialBuildingID, string invalidState)
+        {
+            //Arrange
+            string arguemrntExceptionMessage = 
+                "BuildingController can only be initialised to the following states: 'open', 'closed', 'out of hours'";
+
+            //Act and Assert
+            Assert.Throws<ArgumentException>(() => new BuildingController(initialBuildingID, invalidState), arguemrntExceptionMessage);
         }
 
 
